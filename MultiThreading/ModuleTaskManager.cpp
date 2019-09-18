@@ -3,9 +3,9 @@
 
 void ModuleTaskManager::threadMain()
 {
+	std::unique_lock<std::mutex> lock(mtx);
 	while (true)
 	{
-		std::unique_lock<std::mutex> lock(mtx);
 		// TODO 3:
 		// - Wait for new tasks to arrive
 		if (!scheduledTasks.empty())
@@ -72,5 +72,18 @@ void ModuleTaskManager::scheduleTask(Task *task, Module *owner)
 	task->owner = owner;
 
 	// TODO 2: Insert the task into scheduledTasks so it is executed by some thread
-	scheduledTasks.push(task);
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		scheduledTasks.push(task);
+	}
+	myevent.notify_one();
 }
+
+/*
+		IDEA
+--------------------------
+1. Creem els threads i els assignem la funció. Entenc que la forma es std::thread(&ModuleTaskManager::threadMain,this); per a referir-se a la instancia.
+2. Al principi tots els threads estaran en wait ja que no hi haura cap tasca.
+3. Al introduir una tasca el que hem de fer es treure UN thread de la espera. Per aixo cridem el myevent.
+4. Per esborrar tots els threads el que primer es cridar-los a tots amb el myevent i despres fer el join() per obtenir els resultats.
+*/
