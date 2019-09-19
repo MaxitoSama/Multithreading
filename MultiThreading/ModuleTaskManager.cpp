@@ -3,11 +3,12 @@
 
 void ModuleTaskManager::threadMain()
 {
-	std::unique_lock<std::mutex> lock(mtx);
+
 	while (true)
 	{
 		// TODO 3:
 		// - Wait for new tasks to arrive
+		std::unique_lock<std::mutex> lock(mtx);
 		if (!scheduledTasks.empty())
 		{
 			// - Retrieve a task from scheduledTasks
@@ -16,13 +17,18 @@ void ModuleTaskManager::threadMain()
 
 			// - Execute it
 			currentTask->execute();
-			
+
 			// - Insert it into finishedTasks
 			finishedTasks.push(currentTask);
 		}
 		else
 		{
 			myevent.wait(lock);
+		}
+
+		if (exitFlag)
+		{
+			break;
 		}
 
 	}
@@ -58,6 +64,7 @@ bool ModuleTaskManager::cleanUp()
 {
 	// TODO 5: Notify all threads to finish and join them
 	myevent.notify_all();
+	exitFlag = true;
 
 	for (int i = 0; i < MAX_THREADS; i++)
 	{

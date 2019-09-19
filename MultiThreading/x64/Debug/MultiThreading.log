@@ -1,6 +1,2 @@
-﻿  Application.cpp
-  ModuleResources.cpp
-  SceneGame.cpp
-  SceneLoading.cpp
-  Generating Code...
+﻿  ModuleTaskManager.cpp
   MultiThreading.vcxproj -> D:\1 MARC\Universitat\AA_Videojocs\Github\Multithreading\MultiThreading\x64\Debug\MultiThreading.exe
