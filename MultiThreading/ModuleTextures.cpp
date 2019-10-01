@@ -41,7 +41,8 @@ Texture* ModuleTextures::loadTexture(const char *filename)
 {
 	Texture & texture = getTextureSlotForFilename(filename);
 
-	
+	if (texture.shaderResource == nullptr)
+	{
 		int width, height;
 		texture.shaderResource = loadD3DTextureFromFile(filename, &width, &height);
 		if (texture.shaderResource == nullptr)
@@ -55,7 +56,7 @@ Texture* ModuleTextures::loadTexture(const char *filename)
 		texture.width = width;
 		texture.height = height;
 		texture.used = true;
-	
+	}
 
 	return &texture;
 }
