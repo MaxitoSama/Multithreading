@@ -63,8 +63,8 @@ bool ModuleTaskManager::update()
 bool ModuleTaskManager::cleanUp()
 {
 	// TODO 5: Notify all threads to finish and join them
-	myevent.notify_all();
 	exitFlag = true;
+	myevent.notify_all();
 
 	for (int i = 0; i < MAX_THREADS; i++)
 	{
