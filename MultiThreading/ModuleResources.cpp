@@ -44,7 +44,28 @@ bool ModuleResources::init()
 		"asteroid2.png",
 		"spacecraft1.png",
 		"spacecraft2.png",
-		"spacecraft3.png"
+		"spacecraft3.png",
+		"test_0.jpg",
+		"test_1.jpg",
+		"test_2.jpg",
+		"test_3.jpg",
+		"test_4.jpg",
+		"test_5.jpg",
+		"test_6.jpg",
+		"test_7.jpg",
+		"test_8.jpg",
+		"test_9.jpg",
+		"test_10.jpg",
+		"test_11.jpg",
+		"test_12.jpg",
+		"test_13.jpg",
+		"test_14.jpg",
+		"test_15.jpg",
+		"test_16.jpg",
+		"test_17.jpg",
+		"test_18.jpg",
+		"test_19.jpg",
+		"test_20.jpg"
 	};
 	for (auto filename : texturesToLoad)
 	{
