@@ -11,7 +11,7 @@ void ModuleTaskManager::threadMain()
 		{
 			//needs to be locked
 			std::unique_lock<std::mutex> lock(mtx);
-			while (scheduledTasks.empty())
+			while (scheduledTasks.empty() && !exitFlag)
 			{
 				myevent.wait(lock);
 			}
