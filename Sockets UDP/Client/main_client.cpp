@@ -29,11 +29,36 @@ void printWSErrorAndExit(const char *msg)
 
 void client(const char *serverAddrStr, int port)
 {
+	bool close = false;
+	std::string error = "";
+
 	// TODO-1: Winsock init
+
+	WSADATA wsaData;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	if (iResult != NOERROR)
+	{
+		error="Error initializing Winsock";
+		printWSErrorAndExit(error.c_str());
+	}
 
 	// TODO-2: Create socket (IPv4, datagrams, UDP)
 
+	SOCKET mySocket_client = socket(AF_INET, SOCK_DGRAM, 0);
+	
+	if (mySocket_client == INVALID_SOCKET)
+	{
+		error = "Error creating the socket";
+		printWSErrorAndExit(error.c_str());
+	}
+
 	// TODO-3: Create an address object with the server address
+	
+	struct sockaddr_in remoteAddr;
+	remoteAddr.sin_family = AF_INET;							//To indicate that we are using a the IPv4 adress family.
+	remoteAddr.sin_port = htons(port);							//Transforms the port address to the network order.
+	inet_pton(AF_INET, serverAddrStr, &remoteAddr.sin_addr);	//transforming the string into the appropriate library's IP.
 
 	while (true)
 	{
@@ -44,8 +69,24 @@ void client(const char *serverAddrStr, int port)
 	}
 
 	// TODO-5: Close socket
+	
+	iResult = closesocket(mySocket_client);
+
+	if (iResult == SOCKET_ERROR)
+	{
+		std::string error = "Error closing the socket";
+		printWSErrorAndExit(error.c_str());
+	}
 
 	// TODO-6: Winsock shutdown
+
+	iResult = WSACleanup();
+	
+	if (iResult != NOERROR)
+	{
+		std::string error = "Error";
+		printWSErrorAndExit(error.c_str());
+	}
 }
 
 int main(int argc, char **argv)

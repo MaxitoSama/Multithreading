@@ -27,13 +27,54 @@ void printWSErrorAndExit(const char *msg)
 
 void server(int port)
 {
+	std::string error="";
+
 	// TODO-1: Winsock init
 
-	// TODO-2: Create socket (IPv4, datagrams, UDP
+	WSADATA wsaData;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	if (iResult != NOERROR)
+	{
+		error = "Error initializing Winsock";
+		printWSErrorAndExit(error.c_str());
+	}
+
+	// TODO-2: Create socket (IPv4, datagrams, UDP)
+
+	SOCKET mySocket_server = socket(AF_INET, SOCK_DGRAM, 0);
+
+	if (mySocket_server == INVALID_SOCKET)
+	{
+		error = "Error creating the socket";
+		printWSErrorAndExit(error.c_str());
+	}
+
+	struct sockaddr_in bindAddr;
+	bindAddr.sin_family = AF_INET;
+	bindAddr.sin_port = htons(port);
+	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY; 
 
 	// TODO-3: Force address reuse
 
+	int enable = 1;
+	iResult = setsockopt(mySocket_server, SOL_SOCKET, SO_REUSEADDR, (const char *)& enable, sizeof(int));
+	
+	if (iResult == SOCKET_ERROR) 
+	{ 
+		error = "Error it's not possible to bind the given socket";
+		printWSErrorAndExit(error.c_str());
+	}
+
 	// TODO-4: Bind to a local address
+
+	iResult = bind(mySocket_server, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
+
+	if (iResult != SOCKET_ERROR)
+	{
+		error = "Error initializing Winsock";
+		printWSErrorAndExit(error.c_str());
+	}
 
 	while (true)
 	{
@@ -45,7 +86,23 @@ void server(int port)
 
 	// TODO-6: Close socket
 
+	iResult = closesocket(mySocket_server);
+
+	if (iResult == SOCKET_ERROR)
+	{
+		std::string error = "Error closing the socket";
+		printWSErrorAndExit(error.c_str());
+	}
+
 	// TODO-7: Winsock shutdown
+
+	iResult = WSACleanup();
+
+	if (iResult != NOERROR)
+	{
+		std::string error = "Error";
+		printWSErrorAndExit(error.c_str());
+	}
 }
 
 int main(int argc, char **argv)
