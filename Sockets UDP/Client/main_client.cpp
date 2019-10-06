@@ -29,8 +29,8 @@ void printWSErrorAndExit(const char *msg)
 
 void client(const char *serverAddrStr, int port)
 {
-	bool close = false;
 	std::string error = "";
+	int counter = 0;
 
 	// TODO-1: Winsock init
 
@@ -39,7 +39,7 @@ void client(const char *serverAddrStr, int port)
 
 	if (iResult != NOERROR)
 	{
-		error="Error initializing Winsock";
+		error="Client Error initializing Winsock:";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -49,7 +49,7 @@ void client(const char *serverAddrStr, int port)
 	
 	if (mySocket_client == INVALID_SOCKET)
 	{
-		error = "Error creating the socket";
+		error = "Client Error creating the socket:";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -60,12 +60,36 @@ void client(const char *serverAddrStr, int port)
 	remoteAddr.sin_port = htons(port);							//Transforms the port address to the network order.
 	inet_pton(AF_INET, serverAddrStr, &remoteAddr.sin_addr);	//transforming the string into the appropriate library's IP.
 
-	while (true)
+	while (counter<5)
 	{
 		// TODO-4:
 		// - Send a 'ping' packet to the server
-		// - Receive 'pong' packet from the server
+		std::string msg = "ping";
+		iResult = sendto(mySocket_client, msg.c_str(), msg.size(), NULL, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr));
+		if (iResult == SOCKET_ERROR)
+		{
+			error = "Client Error Sending the message:";
+			printWSErrorAndExit(error.c_str());
+		}
+
 		// - Control errors in both cases
+		// - Receive 'pong' packet from the server
+		char res_msg[10];
+		int test=sizeof(remoteAddr);
+		
+		iResult = recvfrom(mySocket_client, (char*) res_msg, 10, NULL, (struct sockaddr*)&remoteAddr, &test);
+		if (iResult == SOCKET_ERROR)
+		{
+			error = "Client Error receiving the message:";
+			printWSErrorAndExit(error.c_str());
+		}
+		else
+		{
+			res_msg[iResult] = '\0';
+			std::cout << res_msg << std::endl;
+			counter++;
+			Sleep(500);
+		}
 	}
 
 	// TODO-5: Close socket
@@ -74,7 +98,7 @@ void client(const char *serverAddrStr, int port)
 
 	if (iResult == SOCKET_ERROR)
 	{
-		std::string error = "Error closing the socket";
+		std::string error = "Client Error closing the socket:";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -84,7 +108,7 @@ void client(const char *serverAddrStr, int port)
 	
 	if (iResult != NOERROR)
 	{
-		std::string error = "Error";
+		std::string error = "Client Error shuting down the library:";
 		printWSErrorAndExit(error.c_str());
 	}
 }

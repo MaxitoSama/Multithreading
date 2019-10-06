@@ -28,6 +28,7 @@ void printWSErrorAndExit(const char *msg)
 void server(int port)
 {
 	std::string error="";
+	int counter = 0;
 
 	// TODO-1: Winsock init
 
@@ -36,7 +37,7 @@ void server(int port)
 
 	if (iResult != NOERROR)
 	{
-		error = "Error initializing Winsock";
+		error = "Server Error initializing Winsock:";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -46,7 +47,7 @@ void server(int port)
 
 	if (mySocket_server == INVALID_SOCKET)
 	{
-		error = "Error creating the socket";
+		error = "Server Error creating the socket:";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -62,7 +63,7 @@ void server(int port)
 	
 	if (iResult == SOCKET_ERROR) 
 	{ 
-		error = "Error it's not possible to bind the given socket";
+		error = "Server Error it's not possible to bind the given socket";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -70,18 +71,48 @@ void server(int port)
 
 	iResult = bind(mySocket_server, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
 
-	if (iResult != SOCKET_ERROR)
+	if (iResult == SOCKET_ERROR)
 	{
-		error = "Error initializing Winsock";
+		error = "Server Error binding the socket to the IP";
 		printWSErrorAndExit(error.c_str());
 	}
 
-	while (true)
+	while (counter<5)
 	{
 		// TODO-5:
-		// - Receive 'ping' packet from a remote host
-		// - Answer with a 'pong' packet
 		// - Control errors in both cases
+		// - Receive 'ping' packet from a remote host
+		
+		char res_msg[10];
+		int test = sizeof(sockaddr_in);
+
+		iResult = recvfrom(mySocket_server, (char*)res_msg, 10, NULL, (struct sockaddr*)&bindAddr, &test);
+		if (iResult == SOCKET_ERROR)
+		{
+			error = "Server Error receiving the message";
+			printWSErrorAndExit(error.c_str());
+		}
+		else
+		{
+			res_msg[iResult] = '\0';			//we cap the message if it's shorter than the memory allocation
+			std::cout << res_msg << std::endl;	//printing the message
+			Sleep(500);
+		}
+
+		// - Answer with a 'pong' packet
+
+		std::string msg = "pong";
+		iResult = sendto(mySocket_server, msg.c_str(), msg.size(), NULL, (const struct sockaddr*)&bindAddr, sizeof(bindAddr));
+		if (iResult == SOCKET_ERROR)
+		{
+			error = "Server Error Sending the message";
+			printWSErrorAndExit(error.c_str());
+		}
+		else
+		{
+			counter++;
+		}
+
 	}
 
 	// TODO-6: Close socket
@@ -90,7 +121,7 @@ void server(int port)
 
 	if (iResult == SOCKET_ERROR)
 	{
-		std::string error = "Error closing the socket";
+		std::string error = "Server Error closing the socket";
 		printWSErrorAndExit(error.c_str());
 	}
 
@@ -100,7 +131,7 @@ void server(int port)
 
 	if (iResult != NOERROR)
 	{
-		std::string error = "Error";
+		std::string error = "Server Error shutingdown the library";
 		printWSErrorAndExit(error.c_str());
 	}
 }
