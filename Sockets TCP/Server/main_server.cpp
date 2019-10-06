@@ -28,20 +28,66 @@ void printWSErrorAndExit(const char *msg)
 void server(int port)
 {
 	// TODO-1: Winsock init
+	std::string Error = "error";
+	WSADATA wsaData;
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	if (iResult != NOERROR)
+	{
+		Error = "Server Error initializing Winsock";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-2: Create socket (IPv4, stream, TCP)
+	SOCKET mySocket_server = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (mySocket_server == INVALID_SOCKET)
+	{
+		Error = "Server Error creating the TCP Socket";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-3: Configure socket for address reuse
+	int enable = 1;
+	iResult = setsockopt(mySocket_server, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
+
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Server Error configuring address reuse";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-4: Create an address object with any local address
+	struct sockaddr_in bindAddr;
+	bindAddr.sin_family = AF_INET;
+	bindAddr.sin_port = htons(port);
+	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY;
 
 	// TODO-5: Bind socket to the local address
+	iResult = bind(mySocket_server, (const sockaddr*)&bindAddr, sizeof(bindAddr));
 
-	// TODO-6: Make the socket enter into listen mode
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Server Error binding";
+		printWSErrorAndExit(Error.c_str());
+	}
+
+	// TODO-6: Make the socket enter into listen modeç
+	iResult = listen(mySocket_server, 1);
+	
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Server Error entering listen mode";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-7: Accept a new incoming connection from a remote host
 	// Note that once a new connection is accepted, we will have
 	// a new socket directly connected to the remote host.
+
+	SOCKET acceptedScocket;
+	int size = sizeof(mySocket_server);
+	acceptedScocket = accept(mySocket_server, (struct sockaddr*)&mySocket_server, &size);
 
 	while (true)
 	{
@@ -52,8 +98,22 @@ void server(int port)
 	}
 
 	// TODO-9: Close socket
+	iResult = closesocket(mySocket_server);
+
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Server Error clossing Socket";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-10: Winsock shutdown
+	iResult = WSACleanup();
+
+	if (iResult != NOERROR)
+	{
+		Error = "Server Error initializing Winsock";
+		printWSErrorAndExit(Error.c_str());
+	}
 }
 
 int main(int argc, char **argv)

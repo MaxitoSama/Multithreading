@@ -30,12 +30,39 @@ void printWSErrorAndExit(const char *msg)
 void client(const char *serverAddrStr, int port)
 {
 	// TODO-1: Winsock init
+	WSADATA wsaData;
+	std::string Error = "error";
+	int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	if (iResult != NOERROR)
+	{
+		Error = "Client Error Initializing Winsock";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-2: Create socket (IPv4, stream, TCP)
+	SOCKET mySocket_client = socket(AF_INET, SOCK_STREAM, 0);
+	
+	if (mySocket_client == INVALID_SOCKET)
+	{
+		Error = "Client Error creating the TCP Socket";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-3: Create an address object with the server address
+	struct sockaddr_in remoteAddr;
+	remoteAddr.sin_family = AF_INET;
+	remoteAddr.sin_port = htons(port);
+	inet_pton(AF_INET, serverAddrStr, &remoteAddr.sin_addr);
 
 	// TODO-4: Connect to server
+	iResult = connect(mySocket_client, (const struct sockaddr*)&mySocket_client, sizeof(mySocket_client));
+	
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Client Error Connecting to server";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	for (int i = 0; i < 5; ++i)
 	{
@@ -47,8 +74,22 @@ void client(const char *serverAddrStr, int port)
 	}
 
 	// TODO-6: Close socket
+	iResult = closesocket(mySocket_client);
+	
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Client Error clossing the socket";
+		printWSErrorAndExit(Error.c_str());
+	}
 
 	// TODO-7: Winsock shutdown
+	iResult = WSACleanup();
+	
+	if (iResult != NOERROR)
+	{
+		Error = "Client Error clossing Winsock";
+		printWSErrorAndExit(Error.c_str());
+	}
 }
 
 int main(int argc, char **argv)
