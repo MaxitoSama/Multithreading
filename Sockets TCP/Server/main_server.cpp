@@ -73,7 +73,7 @@ void server(int port)
 	}
 
 	// TODO-6: Make the socket enter into listen modeç
-	iResult = listen(mySocket_server, 1);
+	iResult = listen(mySocket_server, 3);
 	
 	if (iResult == SOCKET_ERROR)
 	{
@@ -92,13 +92,47 @@ void server(int port)
 	while (true)
 	{
 		// TODO-8:
-		// - Wait a 'ping' packet from the client
-		// - Send a 'pong' packet to the client
 		// - Control errors in both cases
+
+		// - Wait a 'ping' packet from the client
+		// - Receive 'pong' packet from the server
+		char r_msg[10];
+
+		iResult = recv(acceptedScocket, (char*)r_msg, 10, 0);
+		if (iResult == SOCKET_ERROR)
+		{
+			Error = "Server Error Receiving Message";
+			printWSErrorAndExit(Error.c_str());
+		}
+		else
+		{
+			std::cout << r_msg << std::endl;
+			Sleep(500);
+		}
+
+		// - Send a 'pong' packet to the client
+
+		std::string msg = "pong";
+
+		iResult = send(acceptedScocket, msg.c_str(), msg.length(), 0);
+		if (iResult == SOCKET_ERROR)
+		{
+			Error = "Server Error Sending Message";
+			printWSErrorAndExit(Error.c_str());
+		}
+
 	}
 
 	// TODO-9: Close socket
 	iResult = closesocket(mySocket_server);
+
+	if (iResult == SOCKET_ERROR)
+	{
+		Error = "Server Error clossing Socket";
+		printWSErrorAndExit(Error.c_str());
+	}
+
+	iResult = closesocket(acceptedScocket);
 
 	if (iResult == SOCKET_ERROR)
 	{

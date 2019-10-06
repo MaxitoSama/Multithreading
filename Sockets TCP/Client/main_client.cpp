@@ -56,7 +56,7 @@ void client(const char *serverAddrStr, int port)
 	inet_pton(AF_INET, serverAddrStr, &remoteAddr.sin_addr);
 
 	// TODO-4: Connect to server
-	iResult = connect(mySocket_client, (const struct sockaddr*)&mySocket_client, sizeof(mySocket_client));
+	iResult = connect(mySocket_client, (const struct sockaddr*)&remoteAddr, sizeof(remoteAddr));
 	
 	if (iResult == SOCKET_ERROR)
 	{
@@ -66,10 +66,32 @@ void client(const char *serverAddrStr, int port)
 
 	for (int i = 0; i < 5; ++i)
 	{
-		// TODO-5:
-		// - Send a 'ping' packet to the server
-		// - Receive 'pong' packet from the server
+		// TODO-5:		
 		// - Control errors in both cases
+		// - Send a 'ping' packet to the server
+		std::string msg = "ping";
+
+		iResult = send(mySocket_client, msg.c_str(), msg.length(), 0);
+		if (iResult == SOCKET_ERROR)
+		{
+			Error = "Client Error Sending Message";
+			printWSErrorAndExit(Error.c_str());
+		}
+
+		// - Receive 'pong' packet from the server
+		char r_msg[10];
+		
+		iResult = recv(mySocket_client, (char*)r_msg, 10, 0);
+		if (iResult == SOCKET_ERROR)
+		{
+			Error = "Client Error Receiving Message";
+			printWSErrorAndExit(Error.c_str());
+		}
+		else
+		{
+			std::cout << r_msg << std::endl;
+			Sleep(500);
+		}
 		// - Control graceful disconnection from the server (recv receiving 0 bytes)
 	}
 
