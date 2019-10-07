@@ -86,8 +86,10 @@ void server(int port)
 	// a new socket directly connected to the remote host.
 
 	SOCKET acceptedScocket;
-	int size = sizeof(mySocket_server);
-	acceptedScocket = accept(mySocket_server, (struct sockaddr*)&mySocket_server, &size);
+	struct sockaddr_in client;
+
+	int size = sizeof(client);
+	acceptedScocket = accept(mySocket_server, (struct sockaddr*)&client, &size);
 
 	while (true)
 	{
@@ -95,10 +97,12 @@ void server(int port)
 		// - Control errors in both cases
 
 		// - Wait a 'ping' packet from the client
-		// - Receive 'pong' packet from the server
+		int length = 10;
 		char r_msg[10];
+		int buff_prt=0;
 
-		iResult = recv(acceptedScocket, (char*)r_msg, 10, 0);
+		iResult = recv(acceptedScocket, (char*)r_msg, length, 0);
+		
 		if (iResult == SOCKET_ERROR)
 		{
 			Error = "Server Error Receiving Message";
@@ -106,6 +110,13 @@ void server(int port)
 		}
 		else
 		{
+			if (iResult == 0 && length > 0)
+			{
+				std::cout << "Connection finished" << std::endl;
+				break;
+			}
+
+			r_msg[iResult] = '\0';
 			std::cout << r_msg << std::endl;
 			Sleep(500);
 		}

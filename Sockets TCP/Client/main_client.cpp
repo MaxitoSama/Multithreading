@@ -70,6 +70,7 @@ void client(const char *serverAddrStr, int port)
 		// - Control errors in both cases
 		// - Send a 'ping' packet to the server
 		std::string msg = "ping";
+		std::string rec_msg;
 
 		iResult = send(mySocket_client, msg.c_str(), msg.length(), 0);
 		if (iResult == SOCKET_ERROR)
@@ -89,10 +90,18 @@ void client(const char *serverAddrStr, int port)
 		}
 		else
 		{
+			// - Control graceful disconnection from the server (recv receiving 0 bytes)
+			if (iResult == 0)
+			{
+				std::cout << "Connection finished" << std::endl;
+				break;
+			}
+
+			r_msg[iResult] = '\0';
 			std::cout << r_msg << std::endl;
 			Sleep(500);
 		}
-		// - Control graceful disconnection from the server (recv receiving 0 bytes)
+		
 	}
 
 	// TODO-6: Close socket
