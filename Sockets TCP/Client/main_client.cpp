@@ -80,9 +80,9 @@ void client(const char *serverAddrStr, int port)
 		}
 
 		// - Receive 'pong' packet from the server
-		char r_msg[10];
+		char* r_msg=new char[10];
 		
-		iResult = recv(mySocket_client, (char*)r_msg, 10, 0);
+		iResult = recv(mySocket_client, r_msg, 10, 0);
 		if (iResult == SOCKET_ERROR)
 		{
 			Error = "Client Error Receiving Message";
