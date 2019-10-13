@@ -9,14 +9,48 @@
 
 bool ModuleNetworkingServer::start(int port)
 {
+	int ret = 0;
 	// TODO(jesus): TCP listen socket stuff
 	// - Create the listenSocket
-	// - Set address reuse
-	// - Bind the socket to a local interface
-	// - Enter in listen mode
-	// - Add the listenSocket to the managed list of sockets using addSocket()
+	listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (listenSocket == INVALID_SOCKET)
+	{
+		reportError("Server Error Creating the Socket");
+	}
 
-	state = ServerState::Listening;
+	// - Set address reuse
+	int enable = 1;
+	ret = setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(int));
+	if (ret == SOCKET_ERROR)
+	{
+		reportError("Server Error Enabling the Socket");
+	}
+
+	// - Bind the socket to a local interface
+	sockaddr_in bindAddr;
+	bindAddr.sin_family = AF_INET;
+	bindAddr.sin_port = htons(port);
+	bindAddr.sin_addr.S_un.S_addr = INADDR_ANY;
+
+	ret = bind(listenSocket, (const sockaddr*)&bindAddr, sizeof(bindAddr));
+	if (ret == SOCKET_ERROR)
+	{
+		reportError("Server Error Binding the Socket");
+	}
+	   
+	// - Enter in listen mode
+	ret = listen(listenSocket, 5);
+	if (ret == SOCKET_ERROR)
+	{
+		reportError("Server Error Listening");
+	}
+	else
+	{
+		// - Add the listenSocket to the managed list of sockets using addSocket()
+		addSocket(listenSocket);
+
+		state = ServerState::Listening;
+	}
 
 	return true;
 }
