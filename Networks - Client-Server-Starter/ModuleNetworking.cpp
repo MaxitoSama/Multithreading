@@ -129,7 +129,7 @@ bool ModuleNetworking::preUpdate()
 					}
 					else
 					{
-						if (ret == 0)
+						if (ret == 0 || ret == ECONNRESET)
 						{
 							// TODO(jesus): handle disconnections. Remember that a socket has been
 							// disconnected from its remote end either when recv() returned 0,
@@ -164,11 +164,10 @@ bool ModuleNetworking::preUpdate()
 				if (*it == sockets[i])
 				{
 					onSocketDisconnected(sockets[i]);
-					closesocket(sockets[i]);
 					sockets.erase(sockets.begin() + i);
 				}
 			}
-		}
+		}		
 	}
 
 	return true;

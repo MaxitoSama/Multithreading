@@ -82,6 +82,12 @@ bool ModuleNetworkingServer::gui()
 		ImVec2 texSize(400.0f, 400.0f * tex->height / tex->width);
 		ImGui::Image(tex->shaderResource, texSize);
 
+		if (ImGui::Button("Close Server"))
+		{
+			disconnect();
+			state = ServerState::Stopped;
+		}
+
 		ImGui::Text("List of connected sockets:");
 
 		for (auto &connectedSocket : connectedSockets)

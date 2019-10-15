@@ -71,6 +71,11 @@ bool ModuleNetworkingClient::gui()
 		ImGui::Image(tex->shaderResource, texSize);
 
 		ImGui::Text("%s connected to the server...", playerName.c_str());
+		if (ImGui::Button("Disconect"))
+		{
+			onSocketDisconnected(socketClient);
+			shutdown(socketClient, 2);
+		}
 
 		ImGui::End();
 	}
