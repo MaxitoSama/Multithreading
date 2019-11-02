@@ -49,10 +49,20 @@ bool ModuleNetworkingClient::update()
 	if (state == ClientState::Start)
 	{
 		// TODO(jesus): Send the player name to the server
-		int ret = send(socketClient, playerName.c_str(), playerName.size(), 0);
-		if (ret == SOCKET_ERROR)
+		//int ret = send(socketClient, playerName.c_str(), playerName.size(), 0); --------> Updated
+
+		OutputMemoryStream packet;
+		packet << ClientMessage::Hello;
+		packet << playerName;
+
+		if (sendPacket(packet, socketClient))
 		{
-			reportError("Client Error sending Name");
+			state = ClientState::Logging;
+		}
+		else
+		{
+			disconnect();
+			state = ClientState::Stopped;
 		}
 	}
 
@@ -77,15 +87,29 @@ bool ModuleNetworkingClient::gui()
 			shutdown(socketClient, 2);
 		}
 
+		for (int i = 0; i < Messages.size(); ++i)
+		{
+			ImGui::Text("%s", Messages[i].c_str());
+		}
+
 		ImGui::End();
 	}
 
 	return true;
 }
 
-void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, byte * data)
+void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemoryStream &packet)
 {
-	state = ClientState::Stopped;
+	ServerMessage serverMessage;
+	packet >> serverMessage;
+
+	if (serverMessage == ServerMessage::Welcome)
+	{
+		std::string welcomeMessage;
+		packet >> welcomeMessage;
+
+		Messages.push_back(welcomeMessage);
+	}
 }
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)

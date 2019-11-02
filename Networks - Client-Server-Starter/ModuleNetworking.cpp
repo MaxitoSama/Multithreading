@@ -5,7 +5,6 @@
 static uint8 NumModulesUsingWinsock = 0;
 
 
-
 void ModuleNetworking::reportError(const char* inOperationDesc)
 {
 	LPVOID lpMsgBuf;
@@ -22,6 +21,19 @@ void ModuleNetworking::reportError(const char* inOperationDesc)
 		0, NULL);
 
 	ELOG("Error %s: %d- %s", inOperationDesc, errorNum, lpMsgBuf);
+}
+
+bool ModuleNetworking::sendPacket(const OutputMemoryStream & packet, SOCKET socket)
+{
+	int result = send(socket, packet.GetBufferPtr(), packet.GetSize(), 0);
+
+	if (result == SOCKET_ERROR)
+	{
+		reportError("Error Sending Packet");
+		return false;
+	}
+
+	return true;
 }
 
 void ModuleNetworking::disconnect()
@@ -60,7 +72,9 @@ bool ModuleNetworking::preUpdate()
 
 	// NOTE(jesus): You can use this temporary buffer to store data from recv()
 	const uint32 incomingDataBufferSize = Kilobytes(1);
-	byte incomingDataBuffer[incomingDataBufferSize];
+	
+	//byte incomingDataBuffer[incomingDataBufferSize]; --------> Updated to packet
+	InputMemoryStream packet;
 
 	fd_set readfs;								// New socket set
 	FD_ZERO(&readfs);
@@ -120,16 +134,17 @@ bool ModuleNetworking::preUpdate()
 				}
 				else
 				{
-					ret = recv(sockets[i], (char*)incomingDataBuffer, incomingDataBufferSize, 0);
+					//ret = recv(sockets[i], (char*)incomingDataBuffer, incomingDataBufferSize, 0); -----------> Updated
+					ret = recv(sockets[i], (char*)packet.GetBufferPtr(), packet.GetCapacity(), 0);
 
-					if (ret == SOCKET_ERROR)
+					if (ret == SOCKET_ERROR && WSAGetLastError() != WSAECONNRESET)
 					{
 						reportError("Connection Error Receiving the Information");
 						disconnectedSockets.push_back(sockets[i]);
 					}
 					else
 					{
-						if (ret == 0 || ret == ECONNRESET)
+						if (ret == 0 || WSAGetLastError()== WSAECONNRESET)
 						{
 							// TODO(jesus): handle disconnections. Remember that a socket has been
 							// disconnected from its remote end either when recv() returned 0,
@@ -142,8 +157,12 @@ bool ModuleNetworking::preUpdate()
 						{
 							// On recv() success, communicate the incoming data received to the
 							// subclass (use the callback onSocketReceivedData()).
-							incomingDataBuffer[ret] = '\0';
-							onSocketReceivedData(sockets[i], incomingDataBuffer);
+							
+							/*incomingDataBuffer[ret] = '\0';										-----------> Updated
+							onSocketReceivedData(sockets[i], incomingDataBuffer);					-----------> Updated */
+
+							packet.SetSize((uint32)ret);
+							onSocketReceivedData(sockets[i], packet);
 						}
 
 					}

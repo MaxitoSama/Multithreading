@@ -1,8 +1,5 @@
 #include "ModuleNetworkingServer.h"
 
-
-
-
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworkingServer public methods
 //////////////////////////////////////////////////////////////////////
@@ -129,16 +126,47 @@ void ModuleNetworkingServer::onSocketConnected(SOCKET socket, const sockaddr_in 
 	connectedSockets.push_back(connectedSocket);
 }
 
-void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, byte * data)
+void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemoryStream &packet)
 {
-	// Set the player name of the corresponding connected socket proxy
-	for (auto &connectedSocket : connectedSockets)
+	// Set the player name of the corresponding connected socket proxy         --------------> Updated
+	/*for (auto &connectedSocket : connectedSockets)
 	{
 		if (connectedSocket.socket == socket)
 		{
 			connectedSocket.playerName = (const char *)data;
 		}
+	}*/
+
+
+	ClientMessage clientMessage;
+	packet >> clientMessage;
+
+	if (clientMessage == ClientMessage::Hello)
+	{
+		for (int i = 0; i < connectedSockets.size(); ++i)
+		{
+			std::string playername;
+			packet >> playername;
+
+			if (connectedSockets[i].socket == socket)
+			{
+				connectedSockets[i].playerName = playername;
+			}
+		}
+
+		std::string welcom_message= "Welcome To The best server!";
+		OutputMemoryStream packet;
+		packet << ServerMessage::Welcome;
+		packet << welcom_message;
+
+		int ret = sendPacket(packet, socket);
+		if (ret == SOCKET_ERROR)
+		{
+			reportError("Error Sending Welcom Packet");
+		}
 	}
+
+
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
