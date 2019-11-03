@@ -56,5 +56,6 @@ private:
 
 	std::string playerName;
 	std::vector<std::string> Messages;
+	std::string message;
 };
 

@@ -143,31 +143,31 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 	if (clientMessage == ClientMessage::Hello)
 	{
+		std::string playername;
+		packet >> playername;
+
 		for (int i = 0; i < connectedSockets.size(); ++i)
 		{
-			std::string playername;
-			packet >> playername;
-
 			if (connectedSockets[i].socket == socket)
 			{
-				OutputMemoryStream packet;
+				OutputMemoryStream _packet;
 				std::string welcom_message;
 				if (checkUserName(connectedSockets[i]))
 				{
 					connectedSockets[i].playerName = playername;
-					std::string welcom_message = "Welcome To The best server!";
-					packet << ServerMessage::Welcome;
+					welcom_message = "Welcome To The best server!";
+					_packet << ServerMessage::Welcome;
 				}
 				else
 				{
 					connectedSockets[i].playerName = playername;
-					std::string welcom_message = "Your name is already used! \n Please logout!";
-					packet << ServerMessage::Unwelcome;
+					welcom_message = "Your name is already used! \n Please logout!";
+					_packet << ServerMessage::Unwelcome;
 				}
 								
-				packet << welcom_message;
+				_packet << welcom_message;
 
-				int ret = sendPacket(packet, socket);
+				int ret = sendPacket(_packet, socket);
 				if (ret == SOCKET_ERROR)
 				{
 					reportError("Error Sending Welcom Packet");
@@ -175,12 +175,21 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			}
 		}
 
-		
+		for (int i = 0; i < connectedSockets.size(); ++i)
+		{
+			OutputMemoryStream _packet;
+			_packet << ServerMessage::Newuser;
 
-		
+			std::string newuser_message = playername + " connected";
+			_packet << newuser_message;
+
+			int ret = sendPacket(_packet, socket);
+			if (ret == SOCKET_ERROR)
+			{
+				reportError("Error Sending Welcom Packet");
+			}
+		}
 	}
-
-
 }
 
 void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
@@ -201,7 +210,7 @@ bool ModuleNetworkingServer::checkUserName(ConnectedSocket socket)
 {
 	for (int i = 0; i < connectedSockets.size(); ++i)
 	{
-		if (socket.playerName == connectedSockets[i].playerName)
+		if (socket.socket != connectedSockets[i].socket && socket.playerName == connectedSockets[i].playerName)
 		{
 			return false;
 		}

@@ -46,12 +46,13 @@ bool ModuleNetworkingClient::isRunning() const
 
 bool ModuleNetworkingClient::update()
 {
+	OutputMemoryStream packet;
+
 	if (state == ClientState::Start)
 	{
 		// TODO(jesus): Send the player name to the server
 		//int ret = send(socketClient, playerName.c_str(), playerName.size(), 0); --------> Updated
 
-		OutputMemoryStream packet;
 		packet << ClientMessage::Hello;
 		packet << playerName;
 
@@ -60,6 +61,21 @@ bool ModuleNetworkingClient::update()
 			state = ClientState::Logging;
 		}
 		else
+		{
+			disconnect();
+			state = ClientState::Stopped;
+		}
+	}
+
+	if (state == ClientState::Logging)
+	{
+		if (message.length() > 0)
+		{
+			packet << ClientMessage::Send;
+			packet << message;
+		}
+
+		if (!sendPacket(packet, socketClient))
 		{
 			disconnect();
 			state = ClientState::Stopped;
@@ -87,13 +103,21 @@ bool ModuleNetworkingClient::gui()
 			shutdown(socketClient, 2);
 		}
 		
-		ImGui::BeginChild("Xat",ImVec2(375,475),true);
+		ImGui::BeginChild("Xat",ImVec2(375,400),true);
 
 		for (int i = 0; i < Messages.size(); ++i)
 		{
 			ImGui::Text("%s", Messages[i].c_str());
 		}
 		ImGui::EndChild();
+
+		char buff[1024]="\0";
+
+		if (ImGui::InputText("write", buff, 1024, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			std::string message(buff);
+			DLOG("%s", message.c_str());
+		}
 
 		ImGui::End();
 	}
@@ -115,10 +139,17 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	}
 	else if (serverMessage == ServerMessage::Unwelcome)
 	{
-		std::string welcomeMessage;
-		packet >> welcomeMessage;
+		std::string unwelcomeMessage;
+		packet >> unwelcomeMessage;
 
-		Messages.push_back(welcomeMessage);
+		Messages.push_back(unwelcomeMessage);
+	}
+	else if (serverMessage == ServerMessage::Newuser)
+	{
+		std::string newusermessage;
+		packet >> newusermessage;
+
+		Messages.push_back(newusermessage);
 	}
 }
 
