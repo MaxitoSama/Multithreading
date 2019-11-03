@@ -150,20 +150,34 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 
 			if (connectedSockets[i].socket == socket)
 			{
-				connectedSockets[i].playerName = playername;
+				OutputMemoryStream packet;
+				std::string welcom_message;
+				if (checkUserName(connectedSockets[i]))
+				{
+					connectedSockets[i].playerName = playername;
+					std::string welcom_message = "Welcome To The best server!";
+					packet << ServerMessage::Welcome;
+				}
+				else
+				{
+					connectedSockets[i].playerName = playername;
+					std::string welcom_message = "Your name is already used! \n Please logout!";
+					packet << ServerMessage::Unwelcome;
+				}
+								
+				packet << welcom_message;
+
+				int ret = sendPacket(packet, socket);
+				if (ret == SOCKET_ERROR)
+				{
+					reportError("Error Sending Welcom Packet");
+				}
 			}
 		}
 
-		std::string welcom_message= "Welcome To The best server!";
-		OutputMemoryStream packet;
-		packet << ServerMessage::Welcome;
-		packet << welcom_message;
+		
 
-		int ret = sendPacket(packet, socket);
-		if (ret == SOCKET_ERROR)
-		{
-			reportError("Error Sending Welcom Packet");
-		}
+		
 	}
 
 
@@ -181,5 +195,17 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 			break;
 		}
 	}
+}
+
+bool ModuleNetworkingServer::checkUserName(ConnectedSocket socket)
+{
+	for (int i = 0; i < connectedSockets.size(); ++i)
+	{
+		if (socket.playerName == connectedSockets[i].playerName)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 

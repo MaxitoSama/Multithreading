@@ -86,11 +86,14 @@ bool ModuleNetworkingClient::gui()
 			onSocketDisconnected(socketClient);
 			shutdown(socketClient, 2);
 		}
+		
+		ImGui::BeginChild("Xat",ImVec2(375,475),true);
 
 		for (int i = 0; i < Messages.size(); ++i)
 		{
 			ImGui::Text("%s", Messages[i].c_str());
 		}
+		ImGui::EndChild();
 
 		ImGui::End();
 	}
@@ -104,6 +107,13 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 	packet >> serverMessage;
 
 	if (serverMessage == ServerMessage::Welcome)
+	{
+		std::string welcomeMessage;
+		packet >> welcomeMessage;
+
+		Messages.push_back(welcomeMessage);
+	}
+	else if (serverMessage == ServerMessage::Unwelcome)
 	{
 		std::string welcomeMessage;
 		packet >> welcomeMessage;
