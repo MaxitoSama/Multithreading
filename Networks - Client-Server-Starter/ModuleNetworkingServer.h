@@ -65,7 +65,8 @@ private:
 	// Server methods
 	//////////////////////////////////////////////////////////////////////
 
-	bool checkUserName(ConnectedSocket socket);
+	bool checkUserName(std::string name);
+	void executeCommand(std::string command, SOCKET socket);
 
 	std::vector<ConnectedSocket> connectedSockets;
 };

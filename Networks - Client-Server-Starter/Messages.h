@@ -6,13 +6,20 @@
 enum class ClientMessage
 {
 	Hello,
-	Send
+	Send,
+	Disconnect,
+	Command
 };
 
 enum class ServerMessage
 {
 	Welcome,
 	Unwelcome,
-	Newuser
+	Newuser,
+	Newmessage,
+	Userdisconnected,
+	Command,
+	ComDisconnect,
+	NewName
 };
 

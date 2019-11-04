@@ -34,8 +34,6 @@ bool  ModuleNetworkingClient::start(const char * serverAddressStr, int serverPor
 		state = ClientState::Start;
 	}
 
-	
-
 	return true;
 }
 
@@ -69,16 +67,28 @@ bool ModuleNetworkingClient::update()
 
 	if (state == ClientState::Logging)
 	{
-		if (message.length() > 0)
+		if (send)
 		{
-			packet << ClientMessage::Send;
-			packet << message;
-		}
+			if (message[0] == '/')
+			{
+				DLOG("Executing comand %s", message.c_str());
+				packet << ClientMessage::Command;
+			}
+			else
+			{
+				packet << ClientMessage::Send;
+			}
 
-		if (!sendPacket(packet, socketClient))
-		{
-			disconnect();
-			state = ClientState::Stopped;
+			packet << message;
+
+			if (!sendPacket(packet, socketClient))
+			{
+				disconnect();
+				state = ClientState::Stopped;
+			}
+
+			message.clear();
+			send = false;
 		}
 	}
 
@@ -115,8 +125,9 @@ bool ModuleNetworkingClient::gui()
 
 		if (ImGui::InputText("write", buff, 1024, ImGuiInputTextFlags_EnterReturnsTrue))
 		{
-			std::string message(buff);
-			DLOG("%s", message.c_str());
+			send = true;
+			std::string mymessage(buff);
+			message = mymessage;
 		}
 
 		ImGui::End();
@@ -142,7 +153,12 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string unwelcomeMessage;
 		packet >> unwelcomeMessage;
 
-		Messages.push_back(unwelcomeMessage);
+		disconnect();
+		state = ClientState::Stopped;
+
+		WLOG("%s", unwelcomeMessage.c_str());
+
+		//Messages.push_back(unwelcomeMessage);
 	}
 	else if (serverMessage == ServerMessage::Newuser)
 	{
@@ -151,10 +167,49 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 
 		Messages.push_back(newusermessage);
 	}
+	else if (serverMessage == ServerMessage::Newmessage)
+	{
+		std::string newmessage;
+		packet >> newmessage;
+
+		Messages.push_back(newmessage);
+	}
+	else if (serverMessage == ServerMessage::Userdisconnected)
+	{
+		std::string newmessage;
+		packet >> newmessage;
+
+		Messages.push_back(newmessage);
+	}
+	else if (serverMessage == ServerMessage::Command)
+	{
+		std::string newmessage;
+		packet >> newmessage;
+
+		Messages.push_back(newmessage);
+	}
+	else if (serverMessage == ServerMessage::ComDisconnect)
+	{
+		onSocketDisconnected(socketClient);
+		shutdown(socketClient, 2);
+		disconnect();
+	}
+	else if (serverMessage == ServerMessage::NewName)
+	{
+		std::string newname;
+		packet >> newname;
+
+		playerName = newname;
+	}
+
 }
 
 void ModuleNetworkingClient::onSocketDisconnected(SOCKET socket)
 {
+
 	state = ClientState::Stopped;
+	Messages.clear();
 }
+
+
 

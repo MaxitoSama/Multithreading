@@ -37,7 +37,6 @@ private:
 	void onSocketDisconnected(SOCKET socket) override;
 
 
-
 	//////////////////////////////////////////////////////////////////////
 	// Client state
 	//////////////////////////////////////////////////////////////////////
@@ -57,5 +56,7 @@ private:
 	std::string playerName;
 	std::vector<std::string> Messages;
 	std::string message;
+
+	bool send = false;
 };
 
