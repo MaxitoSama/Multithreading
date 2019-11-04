@@ -117,7 +117,9 @@ bool ModuleNetworkingClient::gui()
 
 		for (int i = 0; i < Messages.size(); ++i)
 		{
-			ImGui::Text("%s", Messages[i].c_str());
+			ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_Text, Messages[i].color);
+			ImGui::Text("%s", Messages[i].message.c_str());
+			ImGui::PopStyleColor();
 		}
 		ImGui::EndChild();
 
@@ -146,7 +148,11 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string welcomeMessage;
 		packet >> welcomeMessage;
 
-		Messages.push_back(welcomeMessage);
+		Message welcome;
+		welcome.color = { 0.0f,1.0f,0.0f,1.0f };
+		welcome.message = welcomeMessage;
+
+		Messages.push_back(welcome);
 	}
 	else if (serverMessage == ServerMessage::Unwelcome)
 	{
@@ -165,28 +171,44 @@ void ModuleNetworkingClient::onSocketReceivedData(SOCKET socket, const InputMemo
 		std::string newusermessage;
 		packet >> newusermessage;
 
-		Messages.push_back(newusermessage);
+		Message newuser;
+		newuser.color = { 0.0f,0.0f,1.0f,1.0f };
+		newuser.message = newusermessage;
+
+		Messages.push_back(newuser);
 	}
 	else if (serverMessage == ServerMessage::Newmessage)
 	{
 		std::string newmessage;
 		packet >> newmessage;
 
-		Messages.push_back(newmessage);
+		Message new_message;
+		new_message.color = { 1.0f,1.0f,1.0f,1.0f };
+		new_message.message = newmessage;
+
+		Messages.push_back(new_message);
 	}
 	else if (serverMessage == ServerMessage::Userdisconnected)
 	{
 		std::string newmessage;
 		packet >> newmessage;
 
-		Messages.push_back(newmessage);
+		Message new_message;
+		new_message.color = { 1.0f,0.0f,0.0f,1.0f };
+		new_message.message = newmessage;
+
+		Messages.push_back(new_message);
 	}
 	else if (serverMessage == ServerMessage::Command)
 	{
 		std::string newmessage;
 		packet >> newmessage;
 
-		Messages.push_back(newmessage);
+		Message new_message;
+		new_message.color = { 1.0f,1.0f,0.0f,1.0f };
+		new_message.message = newmessage;
+
+		Messages.push_back(new_message);
 	}
 	else if (serverMessage == ServerMessage::ComDisconnect)
 	{

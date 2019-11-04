@@ -48,13 +48,19 @@ private:
 		Logging
 	};
 
+	struct Message
+	{
+		ImVec4 color;
+		std::string message;
+	};
+
 	ClientState state = ClientState::Stopped;
 
 	sockaddr_in serverAddress = {};
 	SOCKET socketClient;
 
 	std::string playerName;
-	std::vector<std::string> Messages;
+	std::vector<Message> Messages;
 	std::string message;
 
 	bool send = false;

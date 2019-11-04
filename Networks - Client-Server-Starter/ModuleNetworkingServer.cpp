@@ -136,8 +136,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 			connectedSocket.playerName = (const char *)data;
 		}
 	}*/
-
-
+	
 	ClientMessage clientMessage;
 	packet >> clientMessage;
 
@@ -145,6 +144,8 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 	{
 		std::string playername;
 		packet >> playername;
+
+		bool notify = false;
 
 		for (int i = 0; i < connectedSockets.size(); ++i)
 		{
@@ -158,6 +159,7 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 					connectedSockets[i].playerName = playername;
 					welcom_message = "Welcome To The best server!";
 					_packet << ServerMessage::Welcome;
+					notify = true;
 				}
 				else
 				{
@@ -175,19 +177,24 @@ void ModuleNetworkingServer::onSocketReceivedData(SOCKET socket, const InputMemo
 				}
 			}
 		}
-
-		for (int i = 0; i < connectedSockets.size(); ++i)
+		if (notify)
 		{
-			OutputMemoryStream _packet;
-			_packet << ServerMessage::Newuser;
-
-			std::string newuser_message = playername + " connected";
-			_packet << newuser_message;
-
-			int ret = sendPacket(_packet, connectedSockets[i].socket);
-			if (ret == SOCKET_ERROR)
+			for (int i = 0; i < connectedSockets.size(); ++i)
 			{
-				reportError("Error Sending Welcom Packet");
+				if (connectedSockets[i].socket != socket)
+				{
+					OutputMemoryStream _packet;
+					_packet << ServerMessage::Newuser;
+
+					std::string newuser_message = playername + " joined";
+					_packet << newuser_message;
+
+					int ret = sendPacket(_packet, connectedSockets[i].socket);
+					if (ret == SOCKET_ERROR)
+					{
+						reportError("Error Sending Welcom Packet");
+					}
+				}
 			}
 		}
 	}
@@ -258,7 +265,7 @@ void ModuleNetworkingServer::onSocketDisconnected(SOCKET socket)
 	OutputMemoryStream _packet;
 	_packet << ServerMessage::Userdisconnected;
 
-	std::string text = playername + ": disconnected";
+	std::string text = playername + " left";
 	_packet << text;
 
 	for (int i = 0; i < connectedSockets.size(); ++i)
@@ -305,7 +312,7 @@ void ModuleNetworkingServer::executeCommand(std::string command, SOCKET socket)
 		OutputMemoryStream _packet;
 		_packet << ServerMessage::Command;
 		
-		std::string newuser_message = "";
+		std::string newuser_message = "Users connected: \n";
 		
 		for (int i = 0; i < connectedSockets.size(); i++)
 		{
