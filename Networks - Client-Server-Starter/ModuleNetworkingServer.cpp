@@ -298,7 +298,7 @@ void ModuleNetworkingServer::executeCommand(std::string command, SOCKET socket)
 		OutputMemoryStream _packet;
 		_packet << ServerMessage::Command;
 
-		std::string newuser_message = "Command list:\n /help \n /list \n /kick [name] \n /whisper [name] \n /change_name [name]";
+		std::string newuser_message = "Command list:\n /help \n /list \n /kick [name] \n /whisper [name] [message] \n /change_name [name]";
 		_packet << newuser_message;
 
 		int ret = sendPacket(_packet, socket);
@@ -372,7 +372,7 @@ void ModuleNetworkingServer::executeCommand(std::string command, SOCKET socket)
 			}
 		}
 	}
-	else if (command.find("change_name"))
+	else if (command.find("change_name") != std::string::npos)
 	{
 		std::string remove_1 = "/change_name ";
 		command.erase(0, remove_1.size());
