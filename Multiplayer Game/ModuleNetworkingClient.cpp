@@ -187,6 +187,22 @@ void ModuleNetworkingClient::onUpdate()
 				sendPacket(packet, serverAddress);
 			}
 		}
+
+		if (Time.time>lastPacketReceivedTime + DISCONNECT_TIMEOUT_SECONDS)
+		{
+			disconnect();
+			WLOG("Did not revived Ping from the server");
+		}
+
+		if (Time.time > secondsSinceLastPing + PING_INTERVAL_SECONDS && state != ClientState::Stopped)
+		{
+			secondsSinceLastPing = Time.time;
+
+			OutputMemoryStream packet;
+			packet << ClientMessage::Ping;
+
+			sendPacket(packet, serverAddress);
+		}
 	}
 
 	// Make the camera focus the player game object

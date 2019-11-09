@@ -188,6 +188,8 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 
 void ModuleNetworkingServer::onUpdate()
 {
+	bool sendPing = (Time.time > secondsSinceLastPing + PING_INTERVAL_SECONDS) ? true : false;
+	
 	if (state == ServerState::Listening)
 	{
 		// Replication
@@ -195,12 +197,32 @@ void ModuleNetworkingServer::onUpdate()
 		{
 			if (clientProxy.connected)
 			{
+				if (Time.time > clientProxy.lastPacketReceivedTime + DISCONNECT_TIMEOUT_SECONDS)
+				{
+					destroyClientProxy(&clientProxy);
+					WLOG("Did not revived anything client");
+					continue;
+				}
+
 				OutputMemoryStream packet;
 				packet << ServerMessage::Replication;
 
 				// TODO(jesus): If the replication interval passed and the replication manager of this proxy
 				//              has pending data, write and send a replication packet to this client.
+
+				if (sendPing && state!=ServerState::Stopped)
+				{
+					OutputMemoryStream pingpacket;
+					pingpacket << ServerMessage::Ping;
+
+					sendPacket(pingpacket, clientProxy.address);
+				}
 			}
+		}
+
+		if (sendPing)
+		{
+			secondsSinceLastPing = Time.time;
 		}
 	}
 }
