@@ -11,14 +11,22 @@ void ReplicationManagerClient::read(const InputMemoryStream & packet)
 		ReplicationAction action;
 		packet >> action;
 
-		if (action == ReplicationAction::Create)
+		if (action == ReplicationAction::Create || action == ReplicationAction::CreateClients)
 		{
 			GameObject* object = nullptr;
 			object = Instantiate();
 
 			if (object)
 			{
-				App->modLinkingContext->registerNetworkGameObject(object);
+				if (action == ReplicationAction::Create)
+				{
+					App->modLinkingContext->registerNetworkGameObject(object);
+				}
+				else
+				{
+					App->modLinkingContext->registerNetworkGameObjectWithNetworkId(object,networkId);
+				}
+
 				std::string texture;
 
 				packet >> object->position.x;

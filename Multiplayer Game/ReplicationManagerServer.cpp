@@ -9,6 +9,14 @@ void ReplicationManagerServer::create(uint32 networkId)
 
 	replicationCommands.push_back(createCommand);
 }
+void ReplicationManagerServer::createClients(uint32 networkId)
+{
+	ReplicationCommand createCommand;
+	createCommand.action = ReplicationAction::CreateClients;
+	createCommand.networkId = networkId;
+
+	replicationCommands.push_back(createCommand);
+}
 
 void ReplicationManagerServer::update(uint32 networkId)
 {
@@ -35,7 +43,7 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 		packet << replicationCommands[i].networkId;
 		packet << replicationCommands[i].action;
 
-		if (replicationCommands[i].action == ReplicationAction::Create)
+		if (replicationCommands[i].action == ReplicationAction::Create || replicationCommands[i].action == ReplicationAction::CreateClients)
 		{
 			GameObject* object = nullptr;
 			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);

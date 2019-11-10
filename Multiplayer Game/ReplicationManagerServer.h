@@ -6,6 +6,7 @@ class ReplicationManagerServer
 public:
 
 	void create(uint32 networkId);
+	void createClients(uint32 networkId);
 	void update(uint32 networkId);
 	void destroy(uint32 networkId);
 
