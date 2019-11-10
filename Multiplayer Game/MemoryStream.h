@@ -23,8 +23,7 @@ class OutputMemoryStream
 public:
 
 	// Constructor
-	OutputMemoryStream(uint32 inSize = DEFAULT_STREAM_SIZE):
-		mBuffer(nullptr), mCapacity(0), mHead(0)
+	OutputMemoryStream(uint32 inSize = DEFAULT_STREAM_SIZE): mBuffer(nullptr), mCapacity(0), mHead(0)
 	{ ReallocBuffer(inSize); }
 
 	// Destructor

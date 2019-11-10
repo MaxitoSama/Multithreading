@@ -54,6 +54,8 @@ private:
 
 		uint32 nextExpectedInputSequenceNumber = 0;
 		InputController gamepad;
+
+		ReplicationManagerServer replicationServer;
 	};
 
 	ClientProxy clientProxies[MAX_CLIENTS];
