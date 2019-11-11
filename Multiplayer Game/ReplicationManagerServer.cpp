@@ -69,14 +69,8 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 		}
 		else if (replicationCommands[i].action == ReplicationAction::Destroy)
 		{
-			GameObject* object = nullptr;
-			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);
-
-			if (object)
-			{
-				packet << replicationCommands[i].networkId;
-				packet << replicationCommands[i].action;
-			}
+			packet << replicationCommands[i].networkId;
+			packet << replicationCommands[i].action;
 		}
 	}
 

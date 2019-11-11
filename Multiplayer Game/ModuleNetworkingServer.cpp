@@ -249,7 +249,7 @@ void ModuleNetworkingServer::onConnectionReset(const sockaddr_in & fromAddress)
 			if (clientProxies[i].connected && proxy->clientId != clientProxies[i].clientId)
 			{
 				// TODO(jesus): Notify this proxy's replication manager about the destruction of this player's game object
-				proxy->replicationServer.destroy(proxy->gameObject->networkId);
+				clientProxies[i].replicationServer.destroy(proxy->gameObject->networkId);
 			}
 		}
 

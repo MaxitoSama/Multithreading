@@ -15,22 +15,20 @@ void ReplicationManagerClient::read(const InputMemoryStream & packet)
 		{
 			GameObject* object = nullptr;
 			object = Instantiate();
+					
+			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(object,networkId);
+			
+			std::string texture;
 
-			if (object)
-			{
-				App->modLinkingContext->registerNetworkGameObjectWithNetworkId(object,networkId);
-				
-				std::string texture;
+			packet >> object->position.x;
+			packet >> object->position.y;
+			packet >> object->angle;
+			packet >> object->size.x;
+			packet >> object->size.y;
+			packet >> texture;
 
-				packet >> object->position.x;
-				packet >> object->position.y;
-				packet >> object->angle;
-				packet >> object->size.x;
-				packet >> object->size.y;
-				packet >> texture;
-
-				object->texture = App->modTextures->loadTexture(texture.c_str());
-			}
+			object->texture = App->modTextures->loadTexture(texture.c_str());
+			
 		}
 		else if (action == ReplicationAction::Update)
 		{
