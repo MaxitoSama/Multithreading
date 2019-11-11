@@ -9,14 +9,6 @@ void ReplicationManagerServer::create(uint32 networkId)
 
 	replicationCommands.push_back(createCommand);
 }
-void ReplicationManagerServer::createClients(uint32 networkId)
-{
-	ReplicationCommand createCommand;
-	createCommand.action = ReplicationAction::CreateClients;
-	createCommand.networkId = networkId;
-
-	replicationCommands.push_back(createCommand);
-}
 
 void ReplicationManagerServer::update(uint32 networkId)
 {
@@ -40,16 +32,16 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 {
 	for (int i = 0; i < replicationCommands.size(); ++i)
 	{
-		packet << replicationCommands[i].networkId;
-		packet << replicationCommands[i].action;
-
-		if (replicationCommands[i].action == ReplicationAction::Create || replicationCommands[i].action == ReplicationAction::CreateClients)
+		if (replicationCommands[i].action == ReplicationAction::Create)
 		{
 			GameObject* object = nullptr;
 			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);
 
 			if (object)
 			{
+				packet << replicationCommands[i].networkId;
+				packet << replicationCommands[i].action;
+
 				packet << object->position.x;
 				packet << object->position.y;
 				packet << object->angle;
@@ -67,14 +59,24 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 
 			if (object)
 			{
+				packet << replicationCommands[i].networkId;
+				packet << replicationCommands[i].action;
+
 				packet << object->position.x;
 				packet << object->position.y;
 				packet << object->angle;
 			}
 		}
-		else
+		else if (replicationCommands[i].action == ReplicationAction::Destroy)
 		{
-			return;
+			GameObject* object = nullptr;
+			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);
+
+			if (object)
+			{
+				packet << replicationCommands[i].networkId;
+				packet << replicationCommands[i].action;
+			}
 		}
 	}
 
