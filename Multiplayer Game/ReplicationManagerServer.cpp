@@ -3,44 +3,36 @@
 
 void ReplicationManagerServer::create(uint32 networkId)
 {
-	ReplicationCommand createCommand;
-	createCommand.action = ReplicationAction::Create;
-	createCommand.networkId = networkId;
-
-	replicationCommands.push_back(createCommand);
+	replicationCommands[networkId] = ReplicationAction::Create;
 }
 
 void ReplicationManagerServer::update(uint32 networkId)
 {
-	ReplicationCommand updateCommand;
-	updateCommand.action = ReplicationAction::Update;
-	updateCommand.networkId = networkId;
-
-	replicationCommands.push_back(updateCommand);
+	std::map<uint32, ReplicationAction>::iterator iterator = replicationCommands.find(networkId);
+	if (iterator == replicationCommands.end())
+	{
+		replicationCommands[networkId] = ReplicationAction::Update;
+	}
 }
 
 void ReplicationManagerServer::destroy(uint32 networkId)
 {
-	ReplicationCommand destroyCommand;
-	destroyCommand.action = ReplicationAction::Destroy;
-	destroyCommand.networkId = networkId;
-
-	replicationCommands.push_back(destroyCommand);
+	replicationCommands[networkId] = ReplicationAction::Destroy;
 }
 
 void ReplicationManagerServer::write(OutputMemoryStream & packet)
 {
-	for (int i = 0; i < replicationCommands.size(); ++i)
+	for (std::map<uint32,ReplicationAction>::iterator it_rc = replicationCommands.begin(); it_rc != replicationCommands.end(); ++it_rc)
 	{
-		if (replicationCommands[i].action == ReplicationAction::Create)
+		if (it_rc->second == ReplicationAction::Create)
 		{
 			GameObject* object = nullptr;
-			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);
+			object = App->modLinkingContext->getNetworkGameObject(it_rc->first);
 
 			if (object)
 			{
-				packet << replicationCommands[i].networkId;
-				packet << replicationCommands[i].action;
+				packet << it_rc->first;
+				packet << it_rc->second;
 
 				packet << object->position.x;
 				packet << object->position.y;
@@ -52,25 +44,25 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 				packet << texture;
 			}			
 		}
-		else if (replicationCommands[i].action == ReplicationAction::Update)
+		else if (it_rc->second == ReplicationAction::Update)
 		{
 			GameObject* object = nullptr;
-			object = App->modLinkingContext->getNetworkGameObject(replicationCommands[i].networkId);
+			object = App->modLinkingContext->getNetworkGameObject(it_rc->first);
 
 			if (object)
 			{
-				packet << replicationCommands[i].networkId;
-				packet << replicationCommands[i].action;
+				packet << it_rc->first;
+				packet << it_rc->second;
 
 				packet << object->position.x;
 				packet << object->position.y;
 				packet << object->angle;
 			}
 		}
-		else if (replicationCommands[i].action == ReplicationAction::Destroy)
+		else if (it_rc->second == ReplicationAction::Destroy)
 		{
-			packet << replicationCommands[i].networkId;
-			packet << replicationCommands[i].action;
+			packet << it_rc->first;
+			packet << it_rc->second;
 		}
 	}
 

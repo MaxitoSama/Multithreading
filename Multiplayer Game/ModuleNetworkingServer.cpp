@@ -363,7 +363,7 @@ GameObject * ModuleNetworkingServer::spawnPlayer(ClientProxy &clientProxy, uint8
 	// Notify all client proxies' replication manager to create the object remotely
 	for (int i = 0; i < MAX_CLIENTS; ++i)
 	{
-		if (clientProxies[i].connected && clientProxies[i].clientId!=clientProxy.clientId)
+		if (clientProxies[i].connected)
 		{
 			// TODO(jesus): Notify this proxy's replication manager about the creation of this game object
 			clientProxies[i].replicationServer.create(clientProxy.gameObject->networkId);
