@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 
 class ReplicationManagerServer 
 {
@@ -14,6 +13,6 @@ public:
 
 public:
 
-	std::map<uint32, ReplicationAction> replicationCommands;
+	std::vector<ReplicationCommand> replicationCommands;
 
 };
