@@ -56,6 +56,7 @@ private:
 		InputController gamepad;
 
 		ReplicationManagerServer replicationServer;
+		DeliveryManager deliveryManager;
 	};
 
 	ClientProxy clientProxies[MAX_CLIENTS];
