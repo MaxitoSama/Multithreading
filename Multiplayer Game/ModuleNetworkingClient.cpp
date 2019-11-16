@@ -98,6 +98,11 @@ void ModuleNetworkingClient::onGui()
 
 			ImGui::Text("Input:");
 			ImGui::InputFloat("Delivery interval (s)", &inputDeliveryIntervalSeconds, 0.01f, 0.1f, 4);
+
+			ImGui::Separator();
+
+			ImGui::Text("Last Packet: %d", lastPacketReceived);
+
 		}
 	}
 }
@@ -131,6 +136,9 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		if (message == ServerMessage::Replication)
 		{
 			replicationClient.read(packet);
+			uint32 paco;
+			packet >> lastPacketReceived;
+			DLOG("Last Packet received: %d", lastPacketReceived);
 		}
 	}
 }
@@ -185,7 +193,7 @@ void ModuleNetworkingClient::onUpdate()
 					packet << inputPacketData.buttonBits;
 				}
 
-				// Clear the queue
+				// Clear the queue				
 				inputDataFront = inputDataBack;
 
 				sendPacket(packet, serverAddress);

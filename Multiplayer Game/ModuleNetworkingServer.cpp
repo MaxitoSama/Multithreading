@@ -216,6 +216,8 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.secondsSinceLastReplication = Time.time;
 
 					clientProxy.replicationServer.write(packet);
+					packet << clientProxy.nextExpectedInputSequenceNumber;
+
 					sendPacket(packet, clientProxy.address);
 				}
 
