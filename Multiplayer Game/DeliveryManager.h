@@ -13,6 +13,84 @@ public:
 
 };
 
+class DeliveryDelegateHello : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+	
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
+class DeliveryDelegateWelcome : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
+class DeliveryDelegateUnwelcome : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
+class DeliveryDelegatePing : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
+class DeliveryDelegateReplication : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
+class DeliveryDelegateInput : public DeliveryDelegate
+{
+	void onDeliverySuccess(DeliveryManager* deliveryManager)
+	{
+
+	}
+
+	void onDeliveryFailure(DeliveryManager* deliveryManager)
+	{
+
+	}
+};
+
 struct Delivery
 {
 	uint32 sequenceNumber = 0;
@@ -22,7 +100,7 @@ struct Delivery
 
 class DeliveryManager
 {
-private:
+public:
 
 	//For senders to write a new seq. numbers into packet
 	Delivery* writeSequenceNumber(OutputMemoryStream &packet);
@@ -42,7 +120,10 @@ private:
 
 private:
 
-	uint32 nextSequence = 0;
-	std::list<int> sequenceNumbers;
+	uint32 nextSequenceNumber = 0;
+	std::list<Delivery*> currDeliveries;
 
+	uint32 nextSequenceExpected=0;
+	std::list<uint32> pendingACK;
+		
 };

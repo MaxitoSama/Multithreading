@@ -1,7 +1,6 @@
 #include "Networks.h"
 
 
-
 //////////////////////////////////////////////////////////////////////
 // ModuleNetworkingClient public methods
 //////////////////////////////////////////////////////////////////////
@@ -18,7 +17,6 @@ void ModuleNetworkingClient::setPlayerInfo(const char * pPlayerName, uint8 pSpac
 	playerName = pPlayerName;
 	spaceshipType = pSpaceshipType;
 }
-
 
 
 //////////////////////////////////////////////////////////////////////
@@ -135,16 +133,21 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 		// TODO(jesus): Handle incoming messages from server
 		if (message == ServerMessage::Replication)
 		{
-			replicationClient.read(packet);
-			uint32 paco;
-			packet >> lastPacketReceived;
-			DLOG("Last Packet received: %d", lastPacketReceived);
+			if (deliveryManager.processSequenceNumber(packet))
+			{
+				replicationClient.read(packet);
+				uint32 paco;
+				packet >> lastPacketReceived;
+				DLOG("Last Packet received: %d", lastPacketReceived);
+			}
 		}
 	}
 }
 
 void ModuleNetworkingClient::onUpdate()
 {
+	Delivery* newDelivery = nullptr;
+
 	if (state == ClientState::Stopped) return;
 
 	if (state == ClientState::Start)
@@ -157,6 +160,9 @@ void ModuleNetworkingClient::onUpdate()
 		stream << spaceshipType;
 
 		sendPacket(stream, serverAddress);
+
+		newDelivery = deliveryManager.writeSequenceNumber(stream);
+		newDelivery->delegate = new DeliveryDelegateHello();
 
 		state = ClientState::WaitingWelcome;
 	}
@@ -197,6 +203,9 @@ void ModuleNetworkingClient::onUpdate()
 				inputDataFront = inputDataBack;
 
 				sendPacket(packet, serverAddress);
+
+				newDelivery = deliveryManager.writeSequenceNumber(packet);
+				newDelivery->delegate = new DeliveryDelegateInput();
 			}
 		}
 
@@ -213,7 +222,15 @@ void ModuleNetworkingClient::onUpdate()
 			OutputMemoryStream packet;
 			packet << ClientMessage::Ping;
 
+			if (deliveryManager.hasSequenceNumbersPendingAck())
+			{
+				deliveryManager.writeSequenceNumbersPendingAck(packet);
+			}
+
 			sendPacket(packet, serverAddress);
+
+			newDelivery = deliveryManager.writeSequenceNumber(packet);
+			newDelivery->delegate = new DeliveryDelegatePing();
 		}
 	}
 
