@@ -3,7 +3,7 @@
 
 void ReplicationManagerClient::read(const InputMemoryStream & packet)
 {
-	while (packet.RemainingByteCount() > sizeof(uint32))
+	while (packet.RemainingByteCount() > 0)
 	{
 		uint32 networkId;
 		packet >> networkId;

@@ -2,6 +2,8 @@
 
 #include <list>
 
+#define DELIVERY_TIME_OUT              1.0f
+
 class DeliveryManager;
 
 class DeliveryDelegate

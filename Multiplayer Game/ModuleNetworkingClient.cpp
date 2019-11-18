@@ -136,9 +136,6 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			if (deliveryManager.processSequenceNumber(packet))
 			{
 				replicationClient.read(packet);
-				uint32 paco;
-				packet >> lastPacketReceived;
-				DLOG("Last Packet received: %d", lastPacketReceived);
 			}
 		}
 	}
@@ -146,8 +143,6 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 
 void ModuleNetworkingClient::onUpdate()
 {
-	Delivery* newDelivery = nullptr;
-
 	if (state == ClientState::Stopped) return;
 
 	if (state == ClientState::Start)
@@ -160,9 +155,6 @@ void ModuleNetworkingClient::onUpdate()
 		stream << spaceshipType;
 
 		sendPacket(stream, serverAddress);
-
-		newDelivery = deliveryManager.writeSequenceNumber(stream);
-		newDelivery->delegate = new DeliveryDelegateHello();
 
 		state = ClientState::WaitingWelcome;
 	}
@@ -203,9 +195,6 @@ void ModuleNetworkingClient::onUpdate()
 				inputDataFront = inputDataBack;
 
 				sendPacket(packet, serverAddress);
-
-				newDelivery = deliveryManager.writeSequenceNumber(packet);
-				newDelivery->delegate = new DeliveryDelegateInput();
 			}
 		}
 
@@ -224,13 +213,10 @@ void ModuleNetworkingClient::onUpdate()
 
 			if (deliveryManager.hasSequenceNumbersPendingAck())
 			{
-				deliveryManager.writeSequenceNumbersPendingAck(packet);
+				deliveryManager.writeSequenceNumbersPendingAck(packet); 
 			}
 
 			sendPacket(packet, serverAddress);
-
-			newDelivery = deliveryManager.writeSequenceNumber(packet);
-			newDelivery->delegate = new DeliveryDelegatePing();
 		}
 	}
 

@@ -179,6 +179,10 @@ void ModuleNetworkingServer::onPacketReceived(const InputMemoryStream &packet, c
 				}
 			}
 		}
+		else if (message == ClientMessage::Ping)
+		{
+			proxy->deliveryManager.processAckdSequenceNumbers(packet);
+		}
 
 		if (proxy != nullptr)
 		{
@@ -213,10 +217,15 @@ void ModuleNetworkingServer::onUpdate()
 
 				if (clientProxy.replicationServer.replicationCommands.size() > 0 && Time.time > clientProxy.secondsSinceLastReplication + replicationDeliveryIntervalSeconds)
 				{
+					Delivery* newDelivery = nullptr;
+
 					clientProxy.secondsSinceLastReplication = Time.time;
 
+					//We have to do it before the write in order to have the sequence number first
+					newDelivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
+					newDelivery->delegate = new DeliveryDelegateReplication();
+
 					clientProxy.replicationServer.write(packet);
-					packet << clientProxy.nextExpectedInputSequenceNumber;
 
 					sendPacket(packet, clientProxy.address);
 				}
@@ -228,6 +237,9 @@ void ModuleNetworkingServer::onUpdate()
 
 					sendPacket(pingpacket, clientProxy.address);
 				}
+
+				//Check for timeouts
+				clientProxy.deliveryManager.processTimedOutPackets();
 			}
 		}
 
