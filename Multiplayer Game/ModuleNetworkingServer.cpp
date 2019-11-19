@@ -227,9 +227,6 @@ void ModuleNetworkingServer::onUpdate()
 
 					clientProxy.replicationServer.write(packet);
 
-					//Sending next Expected Input Sequence to reset the input queue
-					packet << clientProxy.nextExpectedInputSequenceNumber;
-
 					// TODO(max): Remember to add the callback
 
 					sendPacket(packet, clientProxy.address);
@@ -239,6 +236,9 @@ void ModuleNetworkingServer::onUpdate()
 				{
 					OutputMemoryStream pingpacket;
 					pingpacket << ServerMessage::Ping;
+
+					//Sending next Expected Input Sequence to reset the input queue
+					pingpacket << clientProxy.nextExpectedInputSequenceNumber;
 
 					sendPacket(pingpacket, clientProxy.address);
 				}
