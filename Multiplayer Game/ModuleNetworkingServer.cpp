@@ -227,7 +227,7 @@ void ModuleNetworkingServer::onUpdate()
 
 					clientProxy.replicationServer.write(packet);
 
-					uint32 paco = 32;
+					//Sending next Expected Input Sequence to reset the input queue
 					packet << clientProxy.nextExpectedInputSequenceNumber;
 
 					// TODO(max): Remember to add the callback

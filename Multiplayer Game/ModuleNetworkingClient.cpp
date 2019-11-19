@@ -140,10 +140,8 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 				uint32 lastPacket = 0;
 				packet >> lastPacket;
 
-				DLOG("PACOOOOO!!!");
-
 				// Clear the queue				
-				//inputDataFront = lastPacket;
+				inputDataFront = lastPacket;
 			}
 		}
 	}
@@ -181,29 +179,29 @@ void ModuleNetworkingClient::onUpdate()
 			inputPacketData.horizontalAxis = Input.horizontalAxis;
 			inputPacketData.verticalAxis = Input.verticalAxis;
 			inputPacketData.buttonBits = packInputControllerButtons(Input);
+		}
 
-			// Create packet (if there's input and the input delivery interval exceeded)
-			if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
+		// Create packet (if there's input and the input delivery interval exceeded)
+		if (secondsSinceLastInputDelivery > inputDeliveryIntervalSeconds)
+		{
+			secondsSinceLastInputDelivery = 0.0f;
+
+			OutputMemoryStream packet;
+			packet << ClientMessage::Input;
+
+			for (uint32 i = inputDataFront; i < inputDataBack; ++i)
 			{
-				secondsSinceLastInputDelivery = 0.0f;
-
-				OutputMemoryStream packet;
-				packet << ClientMessage::Input;
-
-				for (uint32 i = inputDataFront; i < inputDataBack; ++i)
-				{
-					InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
-					packet << inputPacketData.sequenceNumber;
-					packet << inputPacketData.horizontalAxis;
-					packet << inputPacketData.verticalAxis;
-					packet << inputPacketData.buttonBits;
-				}
-
-				// Clear the queue				
-				inputDataFront = inputDataBack;
-
-				sendPacket(packet, serverAddress);
+				InputPacketData &inputPacketData = inputData[i % ArrayCount(inputData)];
+				packet << inputPacketData.sequenceNumber;
+				packet << inputPacketData.horizontalAxis;
+				packet << inputPacketData.verticalAxis;
+				packet << inputPacketData.buttonBits;
 			}
+
+			// Clear the queue				
+			//inputDataFront = inputDataBack;
+
+			sendPacket(packet, serverAddress);
 		}
 
 		if (Time.time>lastPacketReceivedTime + DISCONNECT_TIMEOUT_SECONDS)
