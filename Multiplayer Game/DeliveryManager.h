@@ -1,6 +1,8 @@
 #pragma once
+#include "ReplicationCommand.h"
 
 #include <list>
+#include <map>
 
 #define DELIVERY_TIME_OUT              1.0f
 
@@ -12,6 +14,11 @@ public:
 
 	virtual void onDeliverySuccess(DeliveryManager *deliveryManager) = 0;
 	virtual void onDeliveryFailure(DeliveryManager *deliveryManager) = 0;
+
+public:
+
+	std::map<uint32, ReplicationAction> deliveryReplicationCommands;
+	bool used = false;
 
 };
 

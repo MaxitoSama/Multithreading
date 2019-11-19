@@ -20,7 +20,7 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 	replicationCommands[networkId] = ReplicationAction::Destroy;
 }
 
-void ReplicationManagerServer::write(OutputMemoryStream & packet)
+void ReplicationManagerServer::write(OutputMemoryStream & packet, Delivery* delivery)
 {
 	for (std::map<uint32,ReplicationAction>::iterator it_rc = replicationCommands.begin(); it_rc != replicationCommands.end(); ++it_rc)
 	{
@@ -63,6 +63,12 @@ void ReplicationManagerServer::write(OutputMemoryStream & packet)
 		{
 			packet << it_rc->first;
 			packet << it_rc->second;
+		}
+
+		if (delivery != nullptr)
+		{
+			delivery->delegate->deliveryReplicationCommands[it_rc->first]=it_rc->second;
+			delivery->delegate->used = true;
 		}
 	}
 

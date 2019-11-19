@@ -8,9 +8,3 @@ enum class ReplicationAction {
 	Destroy
 };
 
-struct ReplicationCommand
-{
-	ReplicationAction action;
-	uint32 networkId;
-};
-

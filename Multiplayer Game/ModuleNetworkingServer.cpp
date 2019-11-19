@@ -225,9 +225,10 @@ void ModuleNetworkingServer::onUpdate()
 					newDelivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
 					newDelivery->delegate = new DeliveryDelegateReplication();
 
-					clientProxy.replicationServer.write(packet);
+					clientProxy.replicationServer.write(packet, newDelivery);
 
 					// TODO(max): Remember to add the callback
+					newDelivery->delegate = new DeliveryDelegateReplication();
 
 					sendPacket(packet, clientProxy.address);
 				}
