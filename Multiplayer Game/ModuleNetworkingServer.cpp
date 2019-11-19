@@ -227,10 +227,10 @@ void ModuleNetworkingServer::onUpdate()
 
 					clientProxy.replicationServer.write(packet);
 
-
-
 					uint32 paco = 32;
-					packet << paco;
+					packet << clientProxy.nextExpectedInputSequenceNumber;
+
+					// TODO(max): Remember to add the callback
 
 					sendPacket(packet, clientProxy.address);
 				}
