@@ -136,6 +136,14 @@ void ModuleNetworkingClient::onPacketReceived(const InputMemoryStream &packet, c
 			if (deliveryManager.processSequenceNumber(packet))
 			{
 				replicationClient.read(packet);
+				
+				uint32 lastPacket = 0;
+				packet >> lastPacket;
+
+				DLOG("PACOOOOO!!!");
+
+				// Clear the queue				
+				//inputDataFront = lastPacket;
 			}
 		}
 	}

@@ -227,6 +227,11 @@ void ModuleNetworkingServer::onUpdate()
 
 					clientProxy.replicationServer.write(packet);
 
+
+
+					uint32 paco = 32;
+					packet << paco;
+
 					sendPacket(packet, clientProxy.address);
 				}
 
