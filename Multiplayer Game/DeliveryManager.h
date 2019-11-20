@@ -7,6 +7,7 @@
 #define DELIVERY_TIME_OUT              1.0f
 
 class DeliveryManager;
+class ReplicationManagerServer;
 
 class DeliveryDelegate
 {
@@ -17,87 +18,21 @@ public:
 
 public:
 
-	std::map<uint32, ReplicationAction> deliveryReplicationCommands;
-	bool used = false;
+	std::map<uint32, ReplicationAction> deliveryReplicationCommands;	// To copy the commands if we need to recreate the packet.
+	bool used = false;													// To know that this delivery has a packet saved to be recreated
+	ReplicationManagerServer* replicationManager = nullptr;				// To acces functions: Create, Write and Destroy.
+	uint32 deliverySequence = 0;										// To recreate the delivery sequence.
 
-};
-
-class DeliveryDelegateHello : public DeliveryDelegate
-{
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
-
-	}
-	
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
-
-	}
-};
-
-class DeliveryDelegateWelcome : public DeliveryDelegate
-{
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
-
-	}
-
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
-
-	}
-};
-
-class DeliveryDelegateUnwelcome : public DeliveryDelegate
-{
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
-
-	}
-
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
-
-	}
-};
-
-class DeliveryDelegatePing : public DeliveryDelegate
-{
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
-
-	}
-
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
-
-	}
 };
 
 class DeliveryDelegateReplication : public DeliveryDelegate
 {
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
+	void onDeliverySuccess(DeliveryManager* deliveryManager);
 
-	}
+	void onDeliveryFailure(DeliveryManager* deliveryManager);
 
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
+	void recreateCommands(OutputMemoryStream &packet);
 
-	}
-};
-
-class DeliveryDelegateInput : public DeliveryDelegate
-{
-	void onDeliverySuccess(DeliveryManager* deliveryManager)
-	{
-
-	}
-
-	void onDeliveryFailure(DeliveryManager* deliveryManager)
-	{
-
-	}
 };
 
 struct Delivery
@@ -112,7 +47,7 @@ class DeliveryManager
 public:
 
 	//For senders to write a new seq. numbers into packet
-	Delivery* writeSequenceNumber(OutputMemoryStream &packet);
+	Delivery* writeSequenceNumber(OutputMemoryStream &packet, uint32 forcedSequence);
 
 	//For receivers to process the seq. number from an incoming packet
 	bool processSequenceNumber(const InputMemoryStream &packet);
