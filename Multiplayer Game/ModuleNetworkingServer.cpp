@@ -222,7 +222,7 @@ void ModuleNetworkingServer::onUpdate()
 					clientProxy.secondsSinceLastReplication = Time.time;
 
 					//We have to do it before the write in order to have the sequence number first
-					newDelivery = clientProxy.deliveryManager.writeSequenceNumber(packet,-1);
+					newDelivery = clientProxy.deliveryManager.writeSequenceNumber(packet);
 					newDelivery->delegate = new DeliveryDelegateReplication();
 
 					clientProxy.replicationServer.write(packet, newDelivery);
@@ -242,13 +242,7 @@ void ModuleNetworkingServer::onUpdate()
 				}
 
 				//Check for timeouts
-				OutputMemoryStream resendPacket;
-				if (clientProxy.deliveryManager.processTimedOutPackets(resendPacket))
-				{
-					clientProxy.secondsSinceLastReplication = Time.time;
-					sendPacket(resendPacket, clientProxy.address);
-				}
-
+				clientProxy.deliveryManager.processTimedOutPackets();
 			}
 		}
 

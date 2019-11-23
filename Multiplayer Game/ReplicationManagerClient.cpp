@@ -35,7 +35,6 @@ void ReplicationManagerClient::read(const InputMemoryStream & packet)
 			GameObject* object = nullptr;
 			object = App->modLinkingContext->getNetworkGameObject(networkId);
 
-			
 			packet >> object->position.x;
 			packet >> object->position.y;
 			packet >> object->angle;

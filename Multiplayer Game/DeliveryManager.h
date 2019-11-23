@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 
-#define DELIVERY_TIME_OUT              0.5f
+#define DELIVERY_TIME_OUT              1.0f
 
 class DeliveryManager;
 class ReplicationManagerServer;
@@ -15,7 +15,7 @@ class DeliveryDelegate
 public:
 
 	virtual void onDeliverySuccess(DeliveryManager *deliveryManager) = 0;
-	virtual void onDeliveryFailure(DeliveryManager *deliveryManager, OutputMemoryStream& packet) = 0;
+	virtual void onDeliveryFailure(DeliveryManager *deliveryManager) = 0;
 
 public:
 
@@ -30,9 +30,9 @@ class DeliveryDelegateReplication : public DeliveryDelegate
 {
 	void onDeliverySuccess(DeliveryManager* deliveryManager);
 
-	void onDeliveryFailure(DeliveryManager* deliveryManager, OutputMemoryStream& packet);
+	void onDeliveryFailure(DeliveryManager* deliveryManager);
 
-	void recreateCommands(OutputMemoryStream &packet);
+	void recreateCommands();
 
 };
 
@@ -48,7 +48,7 @@ class DeliveryManager
 public:
 
 	//For senders to write a new seq. numbers into packet
-	Delivery* writeSequenceNumber(OutputMemoryStream &packet, uint32 forcedSequence);
+	Delivery* writeSequenceNumber(OutputMemoryStream &packet);
 
 	//For receivers to process the seq. number from an incoming packet
 	bool processSequenceNumber(const InputMemoryStream &packet);
@@ -59,7 +59,9 @@ public:
 
 	//For senders to process ack'ed seq. numbers from a packet
 	void processAckdSequenceNumbers(const InputMemoryStream &packet);
-	bool processTimedOutPackets(OutputMemoryStream& packet);
+	void processTimedOutPackets();
+
+	void forceSequenceNumber(uint32 num);
 
 	void clear();
 
