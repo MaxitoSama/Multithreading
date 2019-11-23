@@ -3,8 +3,9 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
-#define DELIVERY_TIME_OUT              1.0f
+#define DELIVERY_TIME_OUT              0.5f
 
 class DeliveryManager;
 class ReplicationManagerServer;
@@ -14,7 +15,7 @@ class DeliveryDelegate
 public:
 
 	virtual void onDeliverySuccess(DeliveryManager *deliveryManager) = 0;
-	virtual void onDeliveryFailure(DeliveryManager *deliveryManager) = 0;
+	virtual void onDeliveryFailure(DeliveryManager *deliveryManager, OutputMemoryStream& packet) = 0;
 
 public:
 
@@ -29,7 +30,7 @@ class DeliveryDelegateReplication : public DeliveryDelegate
 {
 	void onDeliverySuccess(DeliveryManager* deliveryManager);
 
-	void onDeliveryFailure(DeliveryManager* deliveryManager);
+	void onDeliveryFailure(DeliveryManager* deliveryManager, OutputMemoryStream& packet);
 
 	void recreateCommands(OutputMemoryStream &packet);
 
@@ -58,7 +59,7 @@ public:
 
 	//For senders to process ack'ed seq. numbers from a packet
 	void processAckdSequenceNumbers(const InputMemoryStream &packet);
-	void processTimedOutPackets();
+	bool processTimedOutPackets(OutputMemoryStream& packet);
 
 	void clear();
 
@@ -69,5 +70,9 @@ private:
 
 	uint32 nextSequenceExpected=0;
 	std::list<uint32> pendingACK;
-		
+
+public:
+
+	std::vector<OutputMemoryStream*> packetsToResend;
+
 };

@@ -86,7 +86,6 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream & packe
 			{
 				(*dv_it)->delegate->onDeliverySuccess(this);
 				to_erase.push_back((*dv_it));
-				break;
 			}
 		}
 	}
@@ -100,16 +99,18 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream & packe
 }
 
 //Server
-void DeliveryManager::processTimedOutPackets()
+bool DeliveryManager::processTimedOutPackets(OutputMemoryStream& packet)
 {
+	bool ret = false;
 	std::vector<Delivery*> to_erase;
 
 	for (std::list<Delivery*>::iterator dv_it = currDeliveries.begin(); dv_it != currDeliveries.end(); ++dv_it)
 	{
 		if ((*dv_it)->dispatchTime + DELIVERY_TIME_OUT < Time.time)
 		{
-			//(*dv_it)->delegate->onDeliveryFailure(this);
+			(*dv_it)->delegate->onDeliveryFailure(this,packet);
 			to_erase.push_back((*dv_it));
+			ret = true;
 			break;
 		}
 	}
@@ -120,6 +121,8 @@ void DeliveryManager::processTimedOutPackets()
 	}
 
 	to_erase.clear();
+
+	return ret;
 }
 
 //Server & Client
@@ -143,11 +146,10 @@ void DeliveryDelegateReplication::onDeliverySuccess(DeliveryManager * deliveryMa
 	DLOG("Deleting Delivery");
 }
 
-void DeliveryDelegateReplication::onDeliveryFailure(DeliveryManager * deliveryManager)
+void DeliveryDelegateReplication::onDeliveryFailure(DeliveryManager * deliveryManager, OutputMemoryStream& packet)
 {
 	if (used)
 	{
-		OutputMemoryStream packet;
 		packet << ServerMessage::Replication;
 
 		Delivery* recreatedDelivery = nullptr;
@@ -156,10 +158,9 @@ void DeliveryDelegateReplication::onDeliveryFailure(DeliveryManager * deliveryMa
 		recreatedDelivery->delegate = new DeliveryDelegateReplication();
 
 		recreateCommands(packet);
-
+		
 		replicationManager->write(packet,recreatedDelivery);
 	}
-	
 }
 
 void DeliveryDelegateReplication::recreateCommands(OutputMemoryStream & packet)
@@ -180,6 +181,7 @@ void DeliveryDelegateReplication::recreateCommands(OutputMemoryStream & packet)
 		default:
 			break;
 		}
-
 	}
+
+	deliveryReplicationCommands.clear();
 }

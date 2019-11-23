@@ -242,7 +242,13 @@ void ModuleNetworkingServer::onUpdate()
 				}
 
 				//Check for timeouts
-				clientProxy.deliveryManager.processTimedOutPackets();
+				OutputMemoryStream resendPacket;
+				if (clientProxy.deliveryManager.processTimedOutPackets(resendPacket))
+				{
+					clientProxy.secondsSinceLastReplication = Time.time;
+					sendPacket(resendPacket, clientProxy.address);
+				}
+
 			}
 		}
 

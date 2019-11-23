@@ -28,7 +28,9 @@ public:
 
 	// Destructor
 	~OutputMemoryStream()
-	{ std::free(mBuffer); }
+	{ 
+		std::free(mBuffer); 
+	}
 
 	// Get pointer to the data in the stream
 	const char *GetBufferPtr() const { return mBuffer; }
