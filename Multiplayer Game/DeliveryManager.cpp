@@ -60,7 +60,8 @@ void DeliveryManager::writeSequenceNumbersPendingAck(OutputMemoryStream & packet
 {
 	for (std::list<uint32>::iterator ACK_it = pendingACK.begin(); ACK_it != pendingACK.end(); ACK_it++)
 	{
-		packet << (*ACK_it);
+		uint32 ack = (*ACK_it);
+		packet << ack;
 	}
 
 	pendingACK.clear();
@@ -73,7 +74,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream & packe
 
 	while (packet.RemainingByteCount() > 0)
 	{
-		uint32 sequenceNumber = -1;
+		uint32 sequenceNumber = 0;
 		packet >> sequenceNumber;
 
 		for (std::list<Delivery*>::iterator dv_it = currDeliveries.begin(); dv_it != currDeliveries.end(); ++dv_it)
@@ -82,6 +83,7 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream & packe
 			{
 				(*dv_it)->delegate->onDeliverySuccess(this);
 				to_erase.push_back((*dv_it));
+				DLOG("Last sequence ACK %d", sequenceNumber);
 			}
 		}
 	}
@@ -103,7 +105,7 @@ void DeliveryManager::processTimedOutPackets()
 	{
 		if ((*dv_it)->dispatchTime + DELIVERY_TIME_OUT < Time.time)
 		{
-			forceSequenceNumber((*dv_it)->delegate->deliverySequence);
+			forceSequenceNumber((*dv_it)->sequenceNumber);
 			(*dv_it)->delegate->onDeliveryFailure(this);
 			to_erase.push_back((*dv_it));
 		}
@@ -129,6 +131,9 @@ void DeliveryManager::clear()
 	{
 		(*dv_it) = nullptr;
 	}
+
+	nextSequenceExpected = 0;
+	nextSequenceNumber = 0;
 
 	currDeliveries.clear();
 	pendingACK.clear();

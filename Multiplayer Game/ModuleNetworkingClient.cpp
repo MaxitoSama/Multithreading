@@ -258,4 +258,5 @@ void ModuleNetworkingClient::onDisconnect()
 	}
 
 	App->modRender->cameraPosition = {};
+	deliveryManager.clear();
 }

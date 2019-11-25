@@ -23,7 +23,6 @@ void ReplicationManagerServer::destroy(uint32 networkId)
 void ReplicationManagerServer::write(OutputMemoryStream & packet, Delivery* delivery)
 {
 	delivery->delegate->replicationManager = this;
-	delivery->delegate->deliverySequence = delivery->sequenceNumber;
 
 	for (std::map<uint32,ReplicationAction>::iterator it_rc = replicationCommands.begin(); it_rc != replicationCommands.end(); ++it_rc)
 	{

@@ -22,7 +22,6 @@ public:
 	std::map<uint32, ReplicationAction> deliveryReplicationCommands;	// To copy the commands if we need to recreate the packet.
 	bool used = false;													// To know that this delivery has a packet saved to be recreated
 	ReplicationManagerServer* replicationManager = nullptr;				// To acces functions: Create, Write and Destroy.
-	uint32 deliverySequence = 0;										// To recreate the delivery sequence.
 
 };
 
@@ -72,6 +71,8 @@ private:
 
 	uint32 nextSequenceExpected=0;
 	std::list<uint32> pendingACK;
+
+	uint32 lastACK = 0;
 
 public:
 
