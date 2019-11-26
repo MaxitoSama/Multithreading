@@ -26,13 +26,13 @@ bool DeliveryManager::processSequenceNumber(const InputMemoryStream & packet)
 	uint32 sequence;
 	packet >> sequence;
 
-	if (sequence == nextSequenceExpected)
+	if (sequence >= nextSequenceExpected)
 	{
 		LOG("Received packet: %d", nextSequenceExpected);
 
-		nextSequenceExpected++;
 		pendingACK.push_back(sequence);
 		ret = true;
+		nextSequenceExpected=sequence+1;
 	}
 	else
 	{
@@ -90,6 +90,8 @@ void DeliveryManager::processAckdSequenceNumbers(const InputMemoryStream & packe
 
 	for (int i = 0; i < to_erase.size(); ++i)
 	{
+		DLOG("Removed packet %d", to_erase[i]->sequenceNumber);
+
 		currDeliveries.remove(to_erase[i]);
 	}
 
@@ -105,7 +107,6 @@ void DeliveryManager::processTimedOutPackets()
 	{
 		if ((*dv_it)->dispatchTime + DELIVERY_TIME_OUT < Time.time)
 		{
-			forceSequenceNumber((*dv_it)->sequenceNumber);
 			(*dv_it)->delegate->onDeliveryFailure(this);
 			to_erase.push_back((*dv_it));
 		}
@@ -122,6 +123,7 @@ void DeliveryManager::processTimedOutPackets()
 void DeliveryManager::forceSequenceNumber(uint32 num)
 {
 	nextSequenceNumber = num;
+	DLOG("Forced numSequence %d", nextSequenceNumber);
 }
 
 //Server & Client
@@ -145,7 +147,7 @@ void DeliveryManager::clear()
 
 void DeliveryDelegateReplication::onDeliverySuccess(DeliveryManager * deliveryManager)
 {
-	//DLOG("Deleting Delivery");
+
 }
 
 void DeliveryDelegateReplication::onDeliveryFailure(DeliveryManager * deliveryManager)
