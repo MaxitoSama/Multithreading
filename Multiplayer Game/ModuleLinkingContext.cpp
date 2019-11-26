@@ -1,4 +1,5 @@
 #include "Networks.h"
+#include "ModuleLinkingContext.h"
 
 
 void ModuleLinkingContext::registerNetworkGameObject(GameObject *gameObject)
@@ -35,6 +36,23 @@ GameObject * ModuleLinkingContext::getNetworkGameObject(uint32 networkId)
 	GameObject *gameObject = networkGameObjects[arrayIndex];
 
 	if (gameObject != nullptr && gameObject->networkId == networkId)
+	{
+		return gameObject;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+GameObject * ModuleLinkingContext::getCoincidentNetworkGameObject(uint32 networkId)
+{
+	uint16 arrayIndex = arrayIndexFromNetworkId(networkId);
+	ASSERT(arrayIndex < MAX_NETWORK_OBJECTS);
+
+	GameObject *gameObject = networkGameObjects[arrayIndex];
+
+	if (gameObject != nullptr)
 	{
 		return gameObject;
 	}

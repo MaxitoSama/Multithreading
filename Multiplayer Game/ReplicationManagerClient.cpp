@@ -14,6 +14,15 @@ void ReplicationManagerClient::read(const InputMemoryStream & packet)
 		if (action == ReplicationAction::Create)
 		{
 			GameObject* object = nullptr;
+
+			object = App->modLinkingContext->getCoincidentNetworkGameObject(networkId);
+
+			if (object)
+			{
+				App->modLinkingContext->unregisterNetworkGameObject(object);
+				Destroy(object);
+			}
+
 			object = Instantiate();
 					
 			App->modLinkingContext->registerNetworkGameObjectWithNetworkId(object,networkId);
@@ -35,10 +44,20 @@ void ReplicationManagerClient::read(const InputMemoryStream & packet)
 			GameObject* object = nullptr;
 			object = App->modLinkingContext->getNetworkGameObject(networkId);
 
-			packet >> object->position.x;
-			packet >> object->position.y;
-			packet >> object->angle;
+			float pos_x = 0.0f;
+			float pos_y = 0.0f;
+			float angle = 0.0f;
+
+			packet >> pos_x;
+			packet >> pos_y;
+			packet >> angle;
 			
+			if(object)
+			{
+				object->position.x = pos_x;
+				object->position.y = pos_y;
+				object->angle = angle;
+			}			
 		}
 		else
 		{
